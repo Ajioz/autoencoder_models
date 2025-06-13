@@ -66,7 +66,8 @@ model.fit(x_train_noisy, x_train, epochs=10, batch_size=256, shuffle=True,
 
 model.evaluate(x_test_noisy, x_test)
 
-model.save('denoising_autoencoder.model')
+model.save('denoising_autoencoder.keras')  # Recommended
+
 
 no_noise_img = model.predict(x_test_noisy)
 
