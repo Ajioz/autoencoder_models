@@ -2,6 +2,7 @@ import os
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
+import sys
 
 from keras.preprocessing.image import img_to_array
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, UpSampling2D
@@ -38,30 +39,42 @@ model = Sequential([
     Conv2D(8, (3, 3), activation='relu', padding='same'),
     UpSampling2D((2, 2)),
     Conv2D(32, (3, 3), activation='relu', padding='same'),
-    Conv2D(3, (3, 3), activation='sigmoid', padding='same')  # Use sigmoid for output
+    Conv2D(3, (3, 3), activation='sigmoid', padding='same')
 ])
 
-# Display model summary
+# Show model summary
 model.summary()
 
-# Compile the model
+# Compile model
 model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
 
-# Callbacks
+# Set callbacks
 early_stop = EarlyStopping(monitor='loss', patience=20, restore_best_weights=True)
 checkpoint = ModelCheckpoint("best_model.h5", monitor='loss', save_best_only=True, mode='min', verbose=1)
 
-# Train and collect training history
-history = model.fit(
-    img_array, img_array,
-    epochs=400,
-    batch_size=1,
-    shuffle=True,
-    callbacks=[early_stop, checkpoint],
-    verbose=0  # Set to 1 to see progress
-)
+# Redirect stdout and stderr to summary.txt
+log_path = os.path.join(BASE_DIR, "summary.txt")
+with open(log_path, "w") as f:
+    sys.stdout = sys.stderr = f  # redirect both stdout and stderr to file
 
-# Predict the reconstructed image
+    # Display model summary in file
+    model.summary()
+
+    # Train and collect history
+    history = model.fit(
+        img_array, img_array,
+        epochs=400,
+        batch_size=1,
+        shuffle=True,
+        callbacks=[early_stop, checkpoint],
+        verbose=1
+    )
+
+# Restore stdout/stderr after training
+sys.stdout = sys.__stdout__
+sys.stderr = sys.__stderr__
+
+# Predict and show results
 predicted = model.predict(img_array)
 
 # Plot original vs reconstructed
