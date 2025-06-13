@@ -1,0 +1,19 @@
+#1 AutoEncoder series
+https://www.youtube.com/playlist?list=PLZsOBAyNTZwb-uK_a6ywrU3t0hy80G5QP
+https://www.youtube.com/watch?v=qiUEgSCyY5o
+
+#2 LSTM Series
+https://www.youtube.com/watch?v=hJuzh5V9QK8
+https://www.youtube.com/watch?v=H4J74KstHTE  --not perfect model (good for learning)
+
+
+setting up virtual environment with python 3.9 while having python 3.13 as default version
+
+Path is given as:
+C:\Users\Hp\AppData\Local\Programs\Python\Python39\python.exe
+
+Creating the virtual environemnt
+C:\Users\Hp\AppData\Local\Programs\Python\Python39\python.exe -m venv venv
+
+Activating the VE
+venv\Scripts\activate
