@@ -125,7 +125,7 @@ for i in range(10):
     plt.imshow(no_noise_img[i].reshape(SIZE,SIZE), cmap="gray")
 
 plt.show()
-
+https://github.com/bnsreenu/python_for_microscopists/tree/master/images/noisy_images
 """
 
 
