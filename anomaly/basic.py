@@ -7,6 +7,7 @@ Last coumn is QUality which is either Good or Bad.
 """
 
 from sklearn import metrics
+from sklearn.model_selection import train_test_split
 import numpy as np
 import pandas as pd
 from tensorflow.keras.models import Sequential
@@ -17,7 +18,7 @@ import pandas as pd
 df = pd.read_csv('anomaly.csv')
 
 #print(df.columns) 
-#print(df.head())
+#print(df.head()) 
 #df['Power'].plot(kind='hist', title='Power Reading', bins=30, figsize=(12,10)) 
 #Most values between 90 and 100 with some outliers / anomalies
 #df['Detector'].plot(kind='hist', title='Detector Reading', bins=30, figsize=(12,10)) 
@@ -54,7 +55,6 @@ print(f"Bad count: {len(df_bad)}")
 x_good = df_good.values
 x_bad = df_bad.values
 
-from sklearn.model_selection import train_test_split
 
 x_good_train, x_good_test = train_test_split(
         x_good, test_size=0.25, random_state=42)
