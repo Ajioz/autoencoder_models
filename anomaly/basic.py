@@ -55,7 +55,6 @@ print(f"Bad count: {len(df_bad)}")
 x_good = df_good.values
 x_bad = df_bad.values
 
-
 x_good_train, x_good_test = train_test_split(
         x_good, test_size=0.25, random_state=42)
 
@@ -89,4 +88,3 @@ score3 = np.sqrt(metrics.mean_squared_error(pred,x_bad))
 print(f"Insample Good Score (RMSE): {score1}".format(score1))
 print(f"Out of Sample Good Score (RMSE): {score2}")
 print(f"Bad sample Score (RMSE): {score3}")
-
