@@ -11,7 +11,10 @@ The data ranges from January 1949 to December 1960, or 12 years, with 144 observ
 import os
 import pandas as pd
 import numpy as np
+import math
+from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
+from pmdarima.arima import ADFTest
 import seaborn as sns
 from pmdarima.arima import auto_arima
 from statsmodels.tsa.stattools import adfuller
@@ -40,7 +43,6 @@ plt.ylabel("Number of Passengers")
 plt.show()
 
 # Is the data stationary?
-from pmdarima.arima import ADFTest
 adf_test = ADFTest(alpha=0.05)
 print("ADF Test Result:", adf_test.should_diff(df))  # Should differ -> not stationary
 
@@ -111,9 +113,6 @@ plt.ylabel("Passengers")
 plt.show()
 
 # RMSE
-import math
-from sklearn.metrics import mean_squared_error
-
 trainScore = math.sqrt(mean_squared_error(X_train, train_prediction))
 print('Train Score: %.2f RMSE' % (trainScore))
 
