@@ -59,7 +59,7 @@ residual = decomposed.resid
 
 plt.figure(figsize=(12, 8))
 plt.subplot(411)
-plt.plot(df, label='Original', color='yellow')
+plt.plot(df['Passengers'], label='Original', color='yellow')
 plt.legend(loc='upper left')
 plt.subplot(412)
 plt.plot(trend, label='Trend', color='yellow')
@@ -113,20 +113,20 @@ plt.ylabel("Passengers")
 plt.show()
 
 # RMSE
-trainScore = math.sqrt(mean_squared_error(X_train, train_prediction))
+trainScore = math.sqrt(mean_squared_error(X_train['Passengers'], train_prediction))
 print('Train Score: %.2f RMSE' % (trainScore))
 
-testScore = math.sqrt(mean_squared_error(X_test, prediction))
+testScore = math.sqrt(mean_squared_error(X_test['Passengers'], prediction))
 print('Test Score: %.2f RMSE' % (testScore))
 
 # Forecast next 3 years
 forecast = result.predict(start=len(df), end=(len(df)-1) + 3*12).rename('Forecast')
 
 plt.figure(figsize=(12, 8))
-plt.plot(X_train, label='Training', color='green')
-plt.plot(X_test, label='Test', color='yellow')
+plt.plot(X_train['Passengers'], label='Training', color='green')
+plt.plot(X_test['Passengers'], label='Test', color='yellow')
 plt.plot(forecast, label='Forecast', color='cyan')
-plt.legend(loc='upper left')  # ✅ fixed from 'Left corner'
+plt.legend(loc='upper left')
 plt.title("Forecast for Next 3 Years")
 plt.xlabel("Date")
 plt.ylabel("Passengers")
