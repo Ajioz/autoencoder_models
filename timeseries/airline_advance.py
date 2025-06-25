@@ -42,11 +42,11 @@ plt.xlabel("Date")
 plt.ylabel("Number of Passengers")
 plt.show()
 
-# Is the data stationary?
+# Is the data stationary --> using ADF Test from pmdarima
 adf_test = ADFTest(alpha=0.05)
 print("ADF Test Result:", adf_test.should_diff(df))  # Should differ -> not stationary
 
-# Dickey-Fuller test
+# Dickey-Fuller test --> using adfuller from statsmodels to confrim stationarity
 adf, pvalue, usedlag_, nobs_, critical_values_, icbest_ = adfuller(df)
 print("pvalue = ", pvalue, " if above 0.05, data is not stationary")
 
