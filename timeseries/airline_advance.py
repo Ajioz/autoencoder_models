@@ -95,13 +95,14 @@ model = SARIMAX(X_train['Passengers'],
                 order=(0, 1, 1),
                 seasonal_order=(2, 1, 1, 12))
 
+# Fit model -> The Training Phase
 result = model.fit()
 print(result.summary())
 
-# Train prediction
+# In-Sample Prediction (Evaluating the Fit)
 train_prediction = result.predict(start=0, end=len(X_train)-1)
 
-# Test prediction
+# Out-of-Sample Prediction (Evaluating the Forecast)
 prediction = result.predict(start=len(X_train), end=len(df)-1).rename('Predicted passengers')
 
 # Plot predictions
