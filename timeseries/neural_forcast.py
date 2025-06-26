@@ -12,8 +12,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
-from keras.models import Sequential
-from keras.layers import Dense
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Input
+from tensorflow.keras.activations import linear, relu, sigmoid
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 
@@ -93,18 +95,23 @@ print('Build deep model...')
 
 # create and fit dense model
 model = Sequential()
-model.add(Dense(10, input_dim=seq_size, activation='relu')) #12
-model.add(Dense(5, activation='relu'))  #8
-model.add(Dense(1 activation='linear')) #Output layer
+model.add(Input(shape=(seq_size,)))
+model.add(Dense(64, activation='relu'))
+model.add(Dense(32, activation='relu'))
+model.add(Dense(1, activation='linear'))  # Output layer for regression
 
-model.compile(loss=tf.keras.losses.mean_squared_error(from_logits=True), 
-tf.keras.optimizers.Adam(learning_rate=0.001), metrics = ['acc'])
+model.compile(
+    loss=tf.keras.losses.MeanSquaredError(),
+    optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+    metrics=['mae']
+)
 
 # model.add(Dense(64, input_dim=seq_size, activation='relu')) #12
 # model.add(Dense(32, activation='relu'))  #8
 # model.add(Dense(1))
 
 # model.compile(loss='mean_squared_error', optimizer='adam', metrics = ['acc'])
+
 print(model.summary()) 
 
 #for layer in model.layers:
