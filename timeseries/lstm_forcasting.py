@@ -9,12 +9,12 @@ The data ranges from January 1949 to December 1960, or 12 years, with 144 observ
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from pandas import read_csv
+import pandas as pd
 import math
 
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import ConvLSTM2D, Dense, Input,LSTM, Flatten
+from tensorflow.keras.layers import ConvLSTM2D, Dense, Bidirectional,Input,LSTM, Flatten
 
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
@@ -29,10 +29,12 @@ dataframe = pd.read_csv(air_passengerPath)
 if dataframe.empty:
     raise FileNotFoundError(f"DataFrame is empty. Check the file path: {air_passengerPath}")
 
-plt.plot(dataframe)
+plt.plot(dataframe['Passengers'])
+plt.title("Monthly Air Passengers")
+plt.ylabel("Passengers")
 
-#Convert pandas dataframe to numpy array
-dataset = dataframe.values
+# Select only the 'Passengers' column for the model
+dataset = dataframe[['Passengers']].values
 dataset = dataset.astype('float32') #COnvert values to float
 
 #LSTM uses sigmoid and tanh that are sensitive to magnitude so values need to be normalized
@@ -89,51 +91,72 @@ print("Shape of test set: {}".format(testX.shape))
 
 ######################################################
 # Reshape input to be [samples, time steps, features]
-#trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
-#testX = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
-#
-#print('Single LSTM with hidden Dense...')
-#model = Sequential()
-#model.add(LSTM(64, input_shape=(None, seq_size)))
-#model.add(Dense(32))
-#model.add(Dense(1))
-#model.compile(loss='mean_squared_error', optimizer='adam')
+# trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
+# testX = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
+
+# print('Single LSTM with hidden Dense...')
+
+# model = Sequential()
+# model.add(Input(shape=(None, seq_size)))  # Input shape is (timesteps, features)
+# model.add(LSTM(64))
+# model.add(Dense(32))
+# model.add(Dense(1))
+
+# model.compile(
+#     loss=tf.keras.losses.MeanSquaredError(),
+#     optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+#     metrics=['mae']
+# )
+
+## model.compile(loss='mean_squared_error', optimizer='adam')
 ##monitor = EarlyStopping(monitor='val_loss', min_delta=1e-3, patience=20, 
-##                        verbose=1, mode='auto', restore_best_weights=True)
-#model.summary()
-#print('Train...')
+#                        verbose=1, mode='auto', restore_best_weights=True)
+# model.summary()
+# print('Train...')
 #########################################
 
 #Stacked LSTM with 1 hidden dense layer
 # reshape input to be [samples, time steps, features]
-#trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
-#testX = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
-#
-#model = Sequential()
-#model.add(LSTM(50, activation='relu', return_sequences=True, input_shape=(None, seq_size)))
-#model.add(LSTM(50, activation='relu'))
-#model.add(Dense(32))
-#model.add(Dense(1))
-#model.compile(optimizer='adam', loss='mean_squared_error')
-#
-#model.summary()
-#print('Train...')
+# trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
+# testX = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
+
+# model = Sequential()
+# model.add(Input(shape=(None, seq_size)))  # Input shape is (timesteps, features)
+# model.add(LSTM(50, activation='tanh', return_sequences=True))
+# model.add(LSTM(50, activation='tanh'))
+# model.add(Dense(32, activation='relu'))  # Hidden dense layer
+# model.add(Dense(1, activation='linear'))  # Output layer for regression
+
+# model.compile(
+#     loss=tf.keras.losses.MeanSquaredError(),
+#     optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+#     metrics=['mae']
+# )
+
+# model.summary()
+# print('Train...')
 ###############################################
 
 #Bidirectional LSTM
 # reshape input to be [samples, time steps, features]
-#trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
-#testX = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
-#
-##For some sequence forecasting problems we may need LSTM to learn
-## sequence in both forward and backward directions
-#from keras.layers import Bidirectional
-#model = Sequential()
-#model.add(Bidirectional(LSTM(50, activation='relu'), input_shape=(None, seq_size)))
-#model.add(Dense(1))
-#model.compile(optimizer='adam', loss='mean_squared_error')
-#model.summary()
-#print('Train...')
+# trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
+# testX = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
+
+# #For some sequence forecasting problems we may need LSTM to learn
+# # sequence in both forward and backward directions
+# model = Sequential()
+# model.add(Input(shape=(None, seq_size)))  # Input shape is (timesteps, features)
+# model.add(Bidirectional(LSTM(50, activation='tanh')))
+# model.add(Dense(1))
+
+# model.compile(
+#     loss=tf.keras.losses.MeanSquaredError(),
+#     optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+#     metrics=['mae']
+# )
+
+# model.summary()
+# print('Train...')
 
 #########################################################
 #ConvLSTM
@@ -144,14 +167,20 @@ trainX = trainX.reshape((trainX.shape[0], 1, 1, 1, seq_size))
 testX = testX.reshape((testX.shape[0], 1, 1, 1, seq_size))
 
 model = Sequential()
-model.add(ConvLSTM2D(filters=64, kernel_size=(1,1), activation='relu', input_shape=(1, 1, 1, seq_size)))
+model.add(Input(shape=(1, 1, 1, seq_size)))  # Input shape is (timesteps, features)
+model.add(ConvLSTM2D(filters=64, kernel_size=(1,1), activation='tanh'))
 model.add(Flatten())
 model.add(Dense(32))
 model.add(Dense(1))
-model.compile(optimizer='adam', loss='mean_squared_error')
-model.summary()
-#print('Train...')
 
+model.compile(
+    loss=tf.keras.losses.MeanSquaredError(),
+    optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+    metrics=['mae']
+)
+
+model.summary()
+print('Train...')
 
 
 ###############################################
@@ -182,17 +211,31 @@ print('Test Score: %.2f RMSE' % (testScore))
 
 # shift train predictions for plotting
 #we must shift the predictions so that they align on the x-axis with the original dataset. 
+
+# Create empty prediction arrays
 trainPredictPlot = np.empty_like(dataset)
 trainPredictPlot[:, :] = np.nan
-trainPredictPlot[seq_size:len(trainPredict)+seq_size, :] = trainPredict
 
-# shift test predictions for plotting
 testPredictPlot = np.empty_like(dataset)
 testPredictPlot[:, :] = np.nan
-testPredictPlot[len(trainPredict)+(seq_size*2)+1:len(dataset)-1, :] = testPredict
+
+# Shift train predictions for plotting
+trainPredictPlot[seq_size:seq_size+len(trainPredict), :] = trainPredict
+
+# Shift test predictions for plotting
+# First index of test in full dataset = train_size (95)
+# After sequencing, predictions start from train_size + seq_size
+test_start = train_size + seq_size
+testPredictPlot[test_start:test_start + len(testPredict), :] = testPredict
+
 
 # plot baseline and predictions
-plt.plot(scaler.inverse_transform(dataset))
-plt.plot(trainPredictPlot)
-plt.plot(testPredictPlot)
+plt.figure(figsize=(12,6))
+plt.plot(scaler.inverse_transform(dataset), label='Original Data')
+plt.plot(trainPredictPlot, label='Train Prediction')
+plt.plot(testPredictPlot, label='Test Prediction')
+plt.title("Air Passenger Forecasting with LSTM")
+plt.xlabel("Time (Months)")
+plt.ylabel("Passengers")
+plt.legend()
 plt.show()
