@@ -6,21 +6,33 @@ the number of international airline passengers in units of 1,000.
 The data ranges from January 1949 to December 1960, or 12 years, with 144 observations.
 """
 
+import os
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from pandas import read_csv
 import math
+
 from keras.models import Sequential
 from keras.layers import Dense
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 
 # load the dataset
-dataframe = read_csv('data/AirPassengers.csv', usecols=[1])
-plt.plot(dataframe)
+# Load dataset
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+air_passengerPath = os.path.join(BASE_DIR, 'data/AirPassengers.csv')
 
-#Convert pandas dataframe to numpy array
-dataset = dataframe.values
+dataframe = pd.read_csv(air_passengerPath)
+
+if dataframe.empty:
+    raise FileNotFoundError(f"DataFrame is empty. Check the file path: {air_passengerPath}")
+
+plt.plot(dataframe['Passengers'])
+plt.title("Monthly Air Passengers")
+plt.ylabel("Passengers")
+
+# Select only the 'Passengers' column for the model
+dataset = dataframe[['Passengers']].values
 dataset = dataset.astype('float32') #COnvert values to float
 
 # Normalization is optional but recommended for neural network as certain 
@@ -78,12 +90,21 @@ print("Shape of test set: {}".format(testX.shape))
 
 #Input dimensions are... (N x seq_size)
 print('Build deep model...')
+
 # create and fit dense model
 model = Sequential()
-model.add(Dense(64, input_dim=seq_size, activation='relu')) #12
-model.add(Dense(32, activation='relu'))  #8
-model.add(Dense(1))
-model.compile(loss='mean_squared_error', optimizer='adam', metrics = ['acc'])
+model.add(Dense(10, input_dim=seq_size, activation='relu')) #12
+model.add(Dense(5, activation='relu'))  #8
+model.add(Dense(1 activation='linear')) #Output layer
+
+model.compile(loss=tf.keras.losses.mean_squared_error(from_logits=True), 
+tf.keras.optimizers.Adam(learning_rate=0.001), metrics = ['acc'])
+
+# model.add(Dense(64, input_dim=seq_size, activation='relu')) #12
+# model.add(Dense(32, activation='relu'))  #8
+# model.add(Dense(1))
+
+# model.compile(loss='mean_squared_error', optimizer='adam', metrics = ['acc'])
 print(model.summary()) 
 
 #for layer in model.layers:
@@ -141,7 +162,10 @@ testPredictPlot[:, :] = np.nan
 testPredictPlot[len(trainPredict)+(seq_size*2)+1:len(dataset)-1, :] = testPredict
 
 # plot baseline and predictions
-plt.plot(scaler.inverse_transform(dataset))
-plt.plot(trainPredictPlot)
-plt.plot(testPredictPlot)
+plt.figure(figsize=(12, 8))
+plt.plot(scaler.inverse_transform(dataset), label='Original Data')
+plt.plot(trainPredictPlot, label='Training Prediction')
+plt.plot(testPredictPlot, label='Test Prediction')
+plt.title("Neural Network Forecast vs Original Data")
+plt.legend()
 plt.show()
