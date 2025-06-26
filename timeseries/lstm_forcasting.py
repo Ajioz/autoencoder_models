@@ -7,17 +7,18 @@ The data ranges from January 1949 to December 1960, or 12 years, with 144 observ
 """
 
 import os
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from pandas import read_csv
 import math
 
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Input
-from tensorflow.keras.activations import linear, relu, sigmoid
+from tensorflow.keras.layers import ConvLSTM2D, Dense, Input,LSTM, Flatten
+
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
+#from keras.callbacks import EarlyStopping
 
 # load the dataset
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -28,16 +29,13 @@ dataframe = pd.read_csv(air_passengerPath)
 if dataframe.empty:
     raise FileNotFoundError(f"DataFrame is empty. Check the file path: {air_passengerPath}")
 
-plt.plot(dataframe['Passengers'])
-plt.title("Monthly Air Passengers")
-plt.ylabel("Passengers")
+plt.plot(dataframe)
 
-# Select only the 'Passengers' column for the model
-dataset = dataframe[['Passengers']].values
+#Convert pandas dataframe to numpy array
+dataset = dataframe.values
 dataset = dataset.astype('float32') #COnvert values to float
 
-# Normalization is optional but recommended for neural network as certain 
-# activation functions are sensitive to magnitude of numbers. 
+#LSTM uses sigmoid and tanh that are sensitive to magnitude so values need to be normalized
 # normalize the dataset
 scaler = MinMaxScaler(feature_range=(0, 1)) #Also try QuantileTransformer
 dataset = scaler.fit_transform(dataset)
@@ -49,7 +47,6 @@ dataset = scaler.fit_transform(dataset)
 train_size = int(len(dataset) * 0.66)
 test_size = len(dataset) - train_size
 train, test = dataset[0:train_size,:], dataset[train_size:len(dataset),:]
-
 
 
 # We cannot fit the model like we normally do for image processing where we have
@@ -78,81 +75,109 @@ def to_sequences(dataset, seq_size=1):
     return np.array(x),np.array(y)
     
 
-seq_size = 10 # Number of time steps to look back 
+seq_size = 10  # Number of time steps to look back 
 #Larger sequences (look further back) may improve forecasting.
+
 trainX, trainY = to_sequences(train, seq_size)
 testX, testY = to_sequences(test, seq_size)
 
-#Compare trainX and dataset. You can see that X= values at t, t+1 and t+2
-#whereas Y is the value that follows, t+3 (since our sequence size is 3)
+
 
 print("Shape of training set: {}".format(trainX.shape))
 print("Shape of test set: {}".format(testX.shape))
 
-#Input dimensions are... (N x seq_size)
-print('Build deep model...')
 
-# create and fit dense model
-model = Sequential()
-model.add(Input(shape=(seq_size,)))
-model.add(Dense(64, activation='relu'))
-model.add(Dense(32, activation='relu'))
-model.add(Dense(1, activation='linear'))  # Output layer for regression
-
-model.compile(
-    loss=tf.keras.losses.MeanSquaredError(),
-    optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
-    metrics=['mae']
-)
-
-# model.add(Dense(64, input_dim=seq_size, activation='relu')) #12
-# model.add(Dense(32, activation='relu'))  #8
-# model.add(Dense(1))
-
-# model.compile(loss='mean_squared_error', optimizer='adam', metrics = ['acc'])
-
-print(model.summary()) 
-
-#for layer in model.layers:
-#    print(layer.input_shape)
-
-##################################################
-#Try another model....
-#print('Build simple model...')
-## create and fit dense model
+######################################################
+# Reshape input to be [samples, time steps, features]
+#trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
+#testX = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
+#
+#print('Single LSTM with hidden Dense...')
 #model = Sequential()
-#model.add(Dense(8, input_dim=seq_size, activation='relu'))
+#model.add(LSTM(64, input_shape=(None, seq_size)))
+#model.add(Dense(32))
 #model.add(Dense(1))
-#model.compile(loss='mean_squared_error', optimizer='adam', metrics = ['acc'])
-#print(model.summary()) 
+#model.compile(loss='mean_squared_error', optimizer='adam')
+##monitor = EarlyStopping(monitor='val_loss', min_delta=1e-3, patience=20, 
+##                        verbose=1, mode='auto', restore_best_weights=True)
+#model.summary()
+#print('Train...')
+#########################################
+
+#Stacked LSTM with 1 hidden dense layer
+# reshape input to be [samples, time steps, features]
+#trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
+#testX = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
+#
+#model = Sequential()
+#model.add(LSTM(50, activation='relu', return_sequences=True, input_shape=(None, seq_size)))
+#model.add(LSTM(50, activation='relu'))
+#model.add(Dense(32))
+#model.add(Dense(1))
+#model.compile(optimizer='adam', loss='mean_squared_error')
+#
+#model.summary()
+#print('Train...')
+###############################################
+
+#Bidirectional LSTM
+# reshape input to be [samples, time steps, features]
+#trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
+#testX = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
+#
+##For some sequence forecasting problems we may need LSTM to learn
+## sequence in both forward and backward directions
+#from keras.layers import Bidirectional
+#model = Sequential()
+#model.add(Bidirectional(LSTM(50, activation='relu'), input_shape=(None, seq_size)))
+#model.add(Dense(1))
+#model.compile(optimizer='adam', loss='mean_squared_error')
+#model.summary()
+#print('Train...')
+
+#########################################################
+#ConvLSTM
+#The layer expects input as a sequence of two-dimensional images, 
+#therefore the shape of input data must be: [samples, timesteps, rows, columns, features]
+
+trainX = trainX.reshape((trainX.shape[0], 1, 1, 1, seq_size))
+testX = testX.reshape((testX.shape[0], 1, 1, 1, seq_size))
+
+model = Sequential()
+model.add(ConvLSTM2D(filters=64, kernel_size=(1,1), activation='relu', input_shape=(1, 1, 1, seq_size)))
+model.add(Flatten())
+model.add(Dense(32))
+model.add(Dense(1))
+model.compile(optimizer='adam', loss='mean_squared_error')
+model.summary()
+#print('Train...')
 
 
 
-# Model training phase --> Fit the model for 100 epochs with a batch size of 2
-# Note: The batch size can be adjusted based on the dataset size and available memory.
+###############################################
 model.fit(trainX, trainY, validation_data=(testX, testY),
           verbose=2, epochs=100)
 
 
-
 # make predictions
+
 trainPredict = model.predict(trainX)
 testPredict = model.predict(testX)
 
-# Estimate model performance
+# invert predictions back to prescaled values
+#This is to compare with original input values
 #SInce we used minmaxscaler we can now use scaler.inverse_transform
 #to invert the transformation.
-
-trainY_inverse = scaler.inverse_transform([trainY])
-testY_inverse = scaler.inverse_transform([testY])
 trainPredict = scaler.inverse_transform(trainPredict)
+trainY = scaler.inverse_transform([trainY])
 testPredict = scaler.inverse_transform(testPredict)
+testY = scaler.inverse_transform([testY])
 
 # calculate root mean squared error
-trainScore = math.sqrt(mean_squared_error(trainY_inverse[0], trainPredict[:,0]))
+trainScore = math.sqrt(mean_squared_error(trainY[0], trainPredict[:,0]))
 print('Train Score: %.2f RMSE' % (trainScore))
 
-testScore = math.sqrt(mean_squared_error(testY_inverse[0], testPredict[:,0]))
+testScore = math.sqrt(mean_squared_error(testY[0], testPredict[:,0]))
 print('Test Score: %.2f RMSE' % (testScore))
 
 # shift train predictions for plotting
@@ -167,10 +192,7 @@ testPredictPlot[:, :] = np.nan
 testPredictPlot[len(trainPredict)+(seq_size*2)+1:len(dataset)-1, :] = testPredict
 
 # plot baseline and predictions
-plt.figure(figsize=(12, 8))
-plt.plot(scaler.inverse_transform(dataset), label='Original Data')
-plt.plot(trainPredictPlot, label='Training Prediction')
-plt.plot(testPredictPlot, label='Test Prediction')
-plt.title("Neural Network Forecast vs Original Data")
-plt.legend()
+plt.plot(scaler.inverse_transform(dataset))
+plt.plot(trainPredictPlot)
+plt.plot(testPredictPlot)
 plt.show()
