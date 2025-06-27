@@ -12,10 +12,17 @@ Data: https://github.com/CSSEGISandData/COVID-19/blob/master/csse_covid_19_data/
 import os
 import pandas as pd
 import numpy as np
+
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Input,LSTM,Dropout, Activation
+from tensorflow.keras.preprocessing.sequence import TimeseriesGenerator
+from tensorflow.keras.activations import linear, relu, sigmoid
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import MinMaxScaler
+
 country = "US"
 #country = 'India'
-time_series_covid19_confirmed_global
 
 # load the dataset
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -51,7 +58,6 @@ train=df_confirmed_country.iloc[:x]
 test = df_confirmed_country.iloc[x:]
 
 ##scale or normalize data as the data is too skewed
-from sklearn.preprocessing import MinMaxScaler
 scaler = MinMaxScaler()
 scaler.fit(train) 
 
@@ -60,7 +66,6 @@ test_scaled = scaler.transform(test)
 
 ## Use TimeSeriestrain_generator to generate data in sequences.
 #Alternatively we can create our own sequences. 
-from keras.preprocessing.sequence import TimeseriesGenerator
 
 #Sequence size has an impact on prediction, especially since COVID is unpredictable!
 seq_size = 7  ## number of steps (lookback)
@@ -80,8 +85,6 @@ print("Total number of samples in the generated data = ", len(test_generator)) #
 #Check data shape from generator
 x,y = test_generator[0]
 
-from keras.models import Sequential
-from keras.layers import Dense, LSTM, Dropout, Activation
 
 #Define Model 
 model = Sequential()
@@ -95,7 +98,8 @@ model.summary()
 print('Train...')
 ##########################
 
-history = model.fit_generator(train_generator, 
+# history = model.fit_generator(train_generator, 
+history = model.fit(train_generator, 
                               validation_data=test_generator, 
                               epochs=50, steps_per_epoch=10)
 

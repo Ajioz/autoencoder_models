@@ -65,6 +65,8 @@ train, test = dataset[0:train_size,:], dataset[train_size:len(dataset),:]
 #creates a dataset where X is the number of passengers at a given time (t, t-1, t-2...) 
 #and Y is the number of passengers at the next time (t + 1).
 
+# Time series generator is a convenient way to create sequences from time series data.
+# However, we can also create our own sequences using a custom function.
 def to_sequences(dataset, seq_size=1):
     x = []
     y = []
