@@ -8,15 +8,32 @@ Video 166b
 Data: https://github.com/CSSEGISandData/COVID-19/blob/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv
 """
 
+
+import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 country = "US"
 #country = 'India'
+time_series_covid19_confirmed_global
+
+# load the dataset
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+covidPath = os.path.join(BASE_DIR, 'data/time_series_covid19_confirmed_global.csv')
 
 #Total COVID confirmed cases
-df_confirmed = pd.read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")
+df_confirmed = pd.read_csv(covidPath)
+
+if df_confirmed.empty:
+    raise FileNotFoundError(f"DataFrame is empty. Check the file path: {covidPath}")
+
+
+
+#Total COVID confirmed cases
+# df_confirmed = pd.read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")
 #df_confirmed.to_csv('global.csv')
+
+
 df_confirmed_country = df_confirmed[df_confirmed["Country/Region"] == country]
 df_confirmed_country = pd.DataFrame(df_confirmed_country[df_confirmed_country.columns[4:]].sum(),columns=["confirmed"])
 df_confirmed_country.index = pd.to_datetime(df_confirmed_country.index,format='%m/%d/%y')
