@@ -1,10 +1,7 @@
-# https://youtu.be/442BTP1_ZBw
 
 """
 @author: Sreenivas Bhattiprolu
-
 Video 166b
-
 Data: https://github.com/CSSEGISandData/COVID-19/blob/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv
 """
 
@@ -15,9 +12,8 @@ import numpy as np
 
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Input,LSTM,Dropout, Activation
+from tensorflow.keras.layers import Dense, LSTM
 from tensorflow.keras.preprocessing.sequence import TimeseriesGenerator
-from tensorflow.keras.activations import linear, relu, sigmoid
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 
@@ -38,8 +34,8 @@ if df_confirmed.empty:
 
 #Total COVID confirmed cases
 # df_confirmed = pd.read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")
-#df_confirmed.to_csv('global.csv')
 
+df_confirmed.to_csv('global.csv')
 
 df_confirmed_country = df_confirmed[df_confirmed["Country/Region"] == country]
 df_confirmed_country = pd.DataFrame(df_confirmed_country[df_confirmed_country.columns[4:]].sum(),columns=["confirmed"])
@@ -88,9 +84,9 @@ x,y = test_generator[0]
 
 #Define Model 
 model = Sequential()
-model.add(LSTM(150, activation='relu', return_sequences=True, input_shape=(seq_size, n_features)))
-model.add(LSTM(64, activation='relu'))
-model.add(Dense(64))
+model.add(LSTM(150, activation='tanh', return_sequences=True, input_shape=(seq_size, n_features)))
+model.add(LSTM(64, activation='tanh'))
+model.add(Dense(64, activation='relu'))
 model.add(Dense(1))
 model.compile(optimizer='adam', loss='mean_squared_error')
 
@@ -147,6 +143,8 @@ df_forecast.loc[:,"actual_confirmed"] = test["confirmed"]
 
 #Plot
 df_forecast.plot(title="Predictions for next 7 days")
+
+plt.show()
 
  
     
