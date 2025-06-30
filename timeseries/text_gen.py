@@ -3,15 +3,15 @@
 Download text file from: http://www.gutenberg.org/ebooks/236
 """
 
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, LSTM
-from keras.optimizers import RMSprop
-import numpy as np
-from keras.callbacks import ModelCheckpoint
-from matplotlib import pyplot as plt
-import random
 import os
 import sys
+import random
+import numpy as np
+from matplotlib import pyplot as plt
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout, LSTM
+from tensorflow.keras.optimizers import RMSprop
+from tensorflow.keras.callbacks import ModelCheckpoint
 
 #LOAD TEXT
 #Save notepad as UTF-8 (select from dropdown during saving)
@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 filename = os.path.join(BASE_DIR, 'files/the_jungle_book.txt')
 
 
-if filename.empty:
+if not os.path.exists(filename):
     raise FileNotFoundError(f"DataFrame is empty. Check the file path: {filename}")
 
 
@@ -143,7 +143,7 @@ history = model.fit(x, y,
           epochs=50,   
           callbacks=callbacks_list)
 
-model.save('my_saved_weights_jungle_book_50epochs.h5')
+model.save('my_saved_model_jungle_book_50epochs.h5')
 ##########################################################################
 
 #plot the training and validation accuracy and loss at each epoch
@@ -169,13 +169,12 @@ plt.show()
 def sample(preds):
     preds = np.asarray(preds).astype('float64')
     preds = np.log(preds)
-    exp_preds = np.exp(preds) #exp of log (x), isn't this same as x??
+    exp_preds = np.exp(preds)
     preds = exp_preds / np.sum(exp_preds)
     probas = np.random.multinomial(1, preds, 1) 
     return np.argmax(probas)
 
-
-
+from keras.models import load_model
 #Prediction
 # load the network weights
 filename = "my_saved_weights_jungle_book_50epochs.h5"
@@ -210,4 +209,3 @@ for i in range(400):   # Number of characters including spaces
 print()
 
 ############################################
-
