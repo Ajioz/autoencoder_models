@@ -21,7 +21,7 @@ filename = os.path.join(BASE_DIR, 'files/the_jungle_book.txt')
 
 
 if not os.path.exists(filename):
-    raise FileNotFoundError(f"DataFrame is empty. Check the file path: {filename}")
+    raise FileNotFoundError(f"Text file is empty. Check the file path: {filename}")
 
 
 raw_text = open(filename, 'r', encoding='utf-8').read()
