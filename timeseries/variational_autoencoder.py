@@ -6,14 +6,14 @@ as input but we can introduce variation by tweaking the latent vector.
 
 """
 
-import keras
+import numpy as np
+import tensorflow
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose, Input, Flatten, Dense, Lambda, Reshape
-#from tensorflow.keras.layers import BatchNormalization
 from tensorflow.keras.models import Model
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras import backend as K
-import numpy as np
 import matplotlib.pyplot as plt
+#from tensorflow.keras.layers import BatchNormalization
 
 # Load MNIST
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
@@ -128,14 +128,14 @@ z_decoded = decoder(z)
 #Define custom loss
 #VAE is trained using two loss functions reconstruction loss and KL divergence
 #Let us add a class to define a custom layer with loss
-class CustomLayer(keras.layers.Layer):
+class CustomLayer(tensorflow.keras.layers.Layer):
 
     def vae_loss(self, x, z_decoded):
         x = K.flatten(x)
         z_decoded = K.flatten(z_decoded)
         
         # Reconstruction loss (as we used sigmoid activation we can use binarycrossentropy)
-        recon_loss = keras.metrics.binary_crossentropy(x, z_decoded)
+        recon_loss = tensorflow.keras.metrics.binary_crossentropy(x, z_decoded)
         
         # KL divergence
         kl_loss = -5e-4 * K.mean(1 + z_sigma - K.square(z_mu) - K.exp(z_sigma), axis=-1)
