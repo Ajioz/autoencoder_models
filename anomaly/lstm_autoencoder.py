@@ -8,6 +8,7 @@ dataset: https://finance.yahoo.com/quote/GE/history/
 Also try S&P: https://finance.yahoo.com/quote/%5EGSPC/history?p=%5EGSPC
 """
 
+import os
 import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Input, Dropout
@@ -21,7 +22,16 @@ from tensorflow.keras.models import Model
 import seaborn as sns
 
     
-dataframe = pd.read_csv('data/GE.csv')
+
+# Load dataset
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+gePath = os.path.join(BASE_DIR, 'data/GE.csv')
+
+dataframe = pd.read_csv(gePath)
+
+if dataframe.empty:
+    raise FileNotFoundError(f"DataFrame is empty. Check the file path: {gePath}")
+
 df = dataframe[['Date', 'Close']]
 df['Date'] = pd.to_datetime(df['Date'])
 
