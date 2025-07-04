@@ -6,7 +6,7 @@ Code tested on Tensorflow: 2.2.0
     Keras: 2.4.3
 
 dataset: https://finance.yahoo.com/quote/GE/history/
-Also try https://www.marketwatch.com/investing/stock/ge/download-data
+Also try https://finance.yahoo.com/quote/GE/history/?period1=1672531200&period2=1751644865
 """
 
 import os
