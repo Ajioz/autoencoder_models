@@ -26,7 +26,7 @@ from pandas.tseries.offsets import CustomBusinessDay
 
 # Load dataset
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-gePath = os.path.join(BASE_DIR, 'data/GE.csv')
+gePath = os.path.join(BASE_DIR, 'data/GE_history.csv')
 
 # Read CSV and normalize column names
 df = pd.read_csv(gePath)

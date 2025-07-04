@@ -1,32 +1,14 @@
+import yfinance as yf
 import pandas as pd
-import time
-import os
-from datetime import datetime
 
-# Define start and end UNIX timestamps
-period1 = 1672531200  # Jan 1, 2023
-period2 = int(time.time())  # current time
+# Define ticker and date range
+ticker = "GE"
+start_date = "2023-01-01"
+end_date = pd.Timestamp.now().strftime('%Y-%m-%d')
 
-# Yahoo Finance download URL for GE stock
-url = (
-    "https://query1.finance.yahoo.com/v7/finance/download/GE"
-    f"?period1={period1}&period2={period2}&interval=1d&events=history&includeAdjustedClose=true"
-)
+# Download historical daily data
+df = yf.download(ticker, start=start_date, end=end_date, interval="1d")
 
-# Read data from the URL
-try:
-    df = pd.read_csv(url)
-except Exception as e:
-    print("❌ Failed to download CSV:", e)
-    exit()
-
-# Create a filename with timestamp for versioning
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-filename = f"GE_history_{timestamp}.csv"
-
-# Save the file in the current working directory
-output_path = os.path.join(os.getcwd(), filename)
-df.to_csv(output_path, index=False)
-
-print(f"✅ Downloaded and saved: {filename} ({df.shape[0]} rows, {df.shape[1]} columns)")
-
+# Save to CSV
+df.to_csv("GE_history.csv")
+print("✅ Data downloaded and saved as GE_history.csv:", df.shape)
