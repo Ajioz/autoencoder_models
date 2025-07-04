@@ -6,7 +6,7 @@ Code tested on Tensorflow: 2.2.0
     Keras: 2.4.3
 
 dataset: https://finance.yahoo.com/quote/GE/history/
-Also try S&P: https://finance.yahoo.com/quote/%5EGSPC/history?p=%5EGSPC
+Also try https://www.marketwatch.com/investing/stock/ge/download-data
 """
 
 import os
@@ -18,6 +18,8 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.preprocessing import StandardScaler
 import seaborn as sns
+from pandas.tseries.holiday import USFederalHolidayCalendar
+from pandas.tseries.offsets import CustomBusinessDay
 #from datetime import datetime
 
 #Read the csv file
@@ -114,8 +116,7 @@ plt.legend()
 #Predicting...
 #Libraries that will help us extract only business days in the US.
 #Otherwise our dates would be wrong when we look back (or forward).  
-from pandas.tseries.holiday import USFederalHolidayCalendar
-from pandas.tseries.offsets import CustomBusinessDay
+
 us_bd = CustomBusinessDay(calendar=USFederalHolidayCalendar())
 #Remember that we can only predict one day in future as our model needs 5 variables
 #as inputs for prediction. We only have all 5 variables until the last day in our dataset.
@@ -148,5 +149,25 @@ original = df[['Date', 'Open']]
 original['Date']=pd.to_datetime(original['Date'])
 original = original.loc[original['Date'] >= '2020-5-1']
 
-sns.lineplot(original['Date'], original['Open'])
-sns.lineplot(df_forecast['Date'], df_forecast['Open'])
+# Ensure forecast DataFrame has proper formatting
+df_forecast = pd.DataFrame({
+    'date': pd.to_datetime(forecast_dates),
+    'open': y_pred_future
+})
+
+# Prepare the original dataset for comparison
+original = df[['date', 'open']].copy()
+original['date'] = pd.to_datetime(original['date'])
+original = original[original['date'] >= '2020-05-01']
+
+# Plotting
+plt.figure(figsize=(12, 6))
+sns.lineplot(x='date', y='open', data=original, label='Original Open Prices')
+sns.lineplot(x='date', y='open', data=df_forecast, label='Forecasted Open Prices')
+plt.title('Stock Price Forecast vs Actual')
+plt.xlabel('Date')
+plt.ylabel('Open Price')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
