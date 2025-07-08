@@ -17,6 +17,10 @@ from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dropout, RepeatVector, TimeDistributed, Dense
 
+# --- Hyperparameters ---
+SEQ_SIZE = 30  # Number of timesteps in a sequence
+THRESHOLD_PERCENTILE = 0.99  # The percentile for setting the anomaly threshold. Tune this value based on problem sensitivity.
+
 # Load dataset
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 gePath = os.path.join(BASE_DIR, 'data/GE.csv')
@@ -66,7 +70,7 @@ def to_sequences(x, y, seq_size=1):
         y_values.append(y.iloc[i + seq_size])
     return np.array(x_values), np.array(y_values)
 
-seq_size = 30  # Number of timesteps
+seq_size = SEQ_SIZE
 trainX, trainY = to_sequences(train[['Close']], train['Close'], seq_size)
 testX, testY = to_sequences(test[['Close']], test['Close'], seq_size)
 
@@ -88,7 +92,7 @@ model.summary()
 
 # Train model
 # A standard autoencoder is trained to reconstruct its own input.
-history = model.fit(trainX, trainX, epochs=10, batch_size=32, validation_split=0.1, verbose=1)
+history = model.fit(trainX, trainX, epochs=30, batch_size=32, validation_split=0.1, verbose=1)
 
 
 # Plot training loss
@@ -107,7 +111,8 @@ plt.show()
 
 # Set a dynamic threshold based on a percentile of the training MAE.
 # This is more robust than a hardcoded value.
-max_trainMAE = np.quantile(trainMAE, 0.99)
+max_trainMAE = np.quantile(trainMAE, THRESHOLD_PERCENTILE)
+print(f"Anomaly threshold ({(THRESHOLD_PERCENTILE * 100):.0f}th percentile) set to: {max_trainMAE:.4f}")
 
 testPredict = model.predict(testX)
 testMAE = np.mean(np.abs(testPredict - testX), axis=(1, 2))
