@@ -1,9 +1,9 @@
 """
 Anomaly Detection using LSTM Autoencoder
-
 Author: Sreenivas Bhattiprolu
+modified by: Ajroghene Sunny
+Date: 2023-10-30
 Fixed for compatibility and pandas error by OpenAI ChatGPT
-
 Dataset: GE stock data from Yahoo Finance (https://finance.yahoo.com/quote/GE/history/)
 """
 
@@ -57,6 +57,9 @@ test['Close'] = scaler.transform(test[['Close']])
 
 # Convert to sequences for LSTM
 def to_sequences(x, y, seq_size=1):
+    # Ensure x is a DataFrame for consistent slicing
+    if isinstance(x, pd.Series):
+        x = x.to_frame()
     x_values, y_values = [], []
     for i in range(len(x) - seq_size):
         x_values.append(x.iloc[i:(i + seq_size)].values)
@@ -69,17 +72,24 @@ testX, testY = to_sequences(test[['Close']], test['Close'], seq_size)
 
 # LSTM Autoencoder model
 model = Sequential()
+# --- Encoder ---
 model.add(LSTM(128, input_shape=(trainX.shape[1], trainX.shape[2])))
 model.add(Dropout(0.2))
+# --- Bridge ---
 model.add(RepeatVector(trainX.shape[1]))
+# --- Decoder ---
 model.add(LSTM(128, return_sequences=True))
 model.add(Dropout(0.2))
 model.add(TimeDistributed(Dense(trainX.shape[2])))
+
 model.compile(optimizer='adam', loss='mae')
+
 model.summary()
 
 # Train model
-history = model.fit(trainX, trainY, epochs=10, batch_size=32, validation_split=0.1, verbose=1)
+# A standard autoencoder is trained to reconstruct its own input.
+history = model.fit(trainX, trainX, epochs=10, batch_size=32, validation_split=0.1, verbose=1)
+
 
 # Plot training loss
 plt.plot(history.history['loss'], label='Training loss')
