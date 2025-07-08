@@ -105,7 +105,9 @@ plt.hist(trainMAE, bins=30)
 plt.title('Training MAE Distribution')
 plt.show()
 
-max_trainMAE = 0.3  # Can be tuned or use percentile-based threshold
+# Set a dynamic threshold based on a percentile of the training MAE.
+# This is more robust than a hardcoded value.
+max_trainMAE = np.quantile(trainMAE, 0.99)
 
 testPredict = model.predict(testX)
 testMAE = np.mean(np.abs(testPredict - testX), axis=(1, 2))
@@ -129,11 +131,12 @@ plt.legend()
 plt.show()
 
 # Plot anomalies
-anomalies = anomaly_df[anomaly_df['anomaly'] == True]
+# Create an explicit copy to avoid the SettingWithCopyWarning
+anomalies = anomaly_df[anomaly_df['anomaly'] == True].copy()
 
 close_prices = scaler.inverse_transform(anomaly_df[['Close']])
 anomaly_df['Close_Inverse'] = close_prices
-anomalies['Close_Inverse'] = scaler.inverse_transform(anomalies[['Close']])
+anomalies['Close_Inverse'] = scaler.inverse_transform(anomalies[['Close']]) # This now safely works on a copy
 
 sns.lineplot(x=anomaly_df['Date'], y=anomaly_df['Close_Inverse'], label='Close Price')
 sns.scatterplot(x=anomalies['Date'], y=anomalies['Close_Inverse'], color='r', label='Anomaly')
