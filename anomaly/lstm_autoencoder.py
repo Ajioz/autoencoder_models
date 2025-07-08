@@ -1,10 +1,10 @@
 """
-Anomaly Detection using LSTM Autoencoder
-Author: Sreenivas Bhattiprolu
-modified by: Ajroghene Sunny
-Date: 2023-10-30
-Fixed for compatibility and pandas error by OpenAI ChatGPT
-Dataset: GE stock data from Yahoo Finance (https://finance.yahoo.com/quote/GE/history/)
+    Anomaly Detection using LSTM Autoencoder
+    Author: Sreenivas Bhattiprolu
+    modified by: Ajroghene Sunny
+    Date: 2023-10-30
+    Fixed for compatibility and pandas error by OpenAI ChatGPT
+    Dataset: GE stock data from Yahoo Finance (https://finance.yahoo.com/quote/GE/history/)
 """
 
 import os
